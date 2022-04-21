@@ -9,12 +9,10 @@ import UIKit
 import WebKit
 
 class ViewController: UIViewController {
-    @IBOutlet var phaseLabels: [UILabel]!
-    @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var accLabel: UILabel!
     @IBOutlet weak var configBtn: UIButton!
-    var phaseLabelSorted: [UILabel] = []
+    @IBOutlet weak var tianbiaoBtn: UIButton!
     
     let initialRequest = URLRequest(url: URL(
         string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=159110074")!
@@ -23,14 +21,6 @@ class ViewController: UIViewController {
     var onWebLoad: (() -> Void) = {}
     var launched = false
     var _phase = -1
-    var phase: Int {
-        get {_phase}
-        set {
-            _phase = newValue
-            progressView.setProgress(max(0.05, 0.25 * Float(_phase)), animated: true)
-            phaseLabelSorted.forEach({$0.textColor = $0.tag == _phase ? .tintColor : .gray})
-        }
-    }
     let times:[[(Int, Int)]] = [
         [(9, 0), (10, 0)],
         [(13, 30), (14, 30)],
@@ -40,11 +30,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         webView.navigationDelegate = self
-        phaseLabelSorted = phaseLabels.sorted(by: {$0.tag < $1.tag})
-        phaseLabelSorted.forEach({$0.textColor = .gray})
-        progressView.setProgress(0, animated: false)
         configBtn.layer.cornerRadius = 20
-        accLabel.text = "Account: \(studentID ?? "not_set")"
+        tianbiaoBtn.layer.cornerRadius = 20
+        accLabel.text = "\(studentID ?? "未登录账号")"
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -69,7 +57,7 @@ class ViewController: UIViewController {
     func setup() {
         for n in 0...2 {
             for t in 0...1 {
-                if !UserDefaults.standard.bool(forKey: "_PN_\(n)_\(t)") {
+                if !UserDefaults.standard.bool(forKey: "_nPN_\(n)_\(t)") {
                     addNotification(n, t)
                 }
             }
@@ -88,26 +76,35 @@ class ViewController: UIViewController {
         matchingDate.hour = times[n][t].1 < 10 ? times[n][t].0 - 1 : times[n][t].0
         matchingDate.minute = times[n][t].1 < 10 ? times[n][t].1 + 50 : times[n][t].1 - 10
         let trigger = UNCalendarNotificationTrigger(dateMatching: matchingDate, repeats: true)
-        let requestIdentifier = "com.wyw.tush.n1.begin"
+        let requestIdentifier = "com.wyw.tush.n\(n)\(t)"
         let request = UNNotificationRequest(
             identifier: requestIdentifier, content: content, trigger: trigger
         )
         UNUserNotificationCenter.current().add(request) {error in
             if error == nil {
-                UserDefaults.standard.set(true, forKey: "_PN_\(n)_\(t)")
+                UserDefaults.standard.set(true, forKey: "_nPN_\(n)_\(t)")
             } else {print(error.debugDescription)}
         }
     }
     
+    @IBAction func fillBtn(_ sender: Any) {
+        fillForms()
+    }
+    
+    @IBAction func exitBtn(_ sender: Any) {
+        goHome()
+    }
+    
     @IBAction func configAction(_ sender: Any) {
         let alert = UIAlertController(
-            title: "Initial Config", message: nil,
+            title: "账号设置", message: nil,
             preferredStyle: .alert
         )
         alert.addTextField(configurationHandler: {textField in
             textField.keyboardType = .numberPad
             textField.clearButtonMode = .never
-            textField.placeholder = "Your SHTU ID"
+            textField.placeholder = "你的上科大学号"
+            textField.text = self.studentID
         })
         alert.addAction(UIAlertAction(
             title: "Done", style: .default, handler: {_ in
@@ -127,21 +124,21 @@ extension ViewController {
     
     func configInit() {
         onWebLoad = {[self] in
-            print("onload phase", phase)
-            switch phase {
+            switch _phase {
             case -1:
-                phase = 0
+                _phase = 0
                 runJS("document.getElementById('register-user-name').value='\(self.studentID!)';")
                 runJS("document.getElementById('btnSubmit').click();")
             case 0:
-                phase = 1
+                break
+                _phase = 1
                 selectLatestForm()
             case 1:
                 fillForms()
             case 2:
-                submitAction()
+                break
             case 3:
-                phase = 4
+                break
                 goHome()
             default: goHome()
             }
@@ -153,28 +150,21 @@ extension ViewController {
     }
     
     func loginAction() {
-        print("phase: login")
-        accLabel.text = "Account: \(studentID!)"
+        accLabel.text = "\(studentID!)"
+        _phase = -1
         webView.load(initialRequest)
     }
     
     func selectLatestForm() {
-        print("phase: sel")
         click(on: "/html/body/div[2]/div/div/div/dl[1]/a")
     }
     
     func fillForms() {
-        print("phase: fill")
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[2]/div[2]/div/div")
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[3]/div[2]/div[1]/div")
         runJS("$(document).scrollTop($(document).height());")
-        phase = 2
     }
     
-    func submitAction() {
-        print("phase: smt")
-        phase = 3
-    }
 }
 
 extension ViewController {
