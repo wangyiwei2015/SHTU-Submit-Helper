@@ -23,7 +23,6 @@ class ViewController: UIViewController {
     var _phase = -1
     let times:[[(Int, Int)]] = [
         [(9, 0), (10, 0)],
-        [(13, 30), (14, 30)],
         [(20, 0), (21, 0)]
     ]
     
@@ -55,7 +54,7 @@ class ViewController: UIViewController {
     }
     
     func setup() {
-        for n in 0...2 {
+        for n in 0...1 {
             for t in 0...1 {
                 if !UserDefaults.standard.bool(forKey: "_nPN_\(n)_\(t)") {
                     addNotification(n, t)
@@ -69,12 +68,17 @@ class ViewController: UIViewController {
     func addNotification(_ n: Int, _ t: Int) {
         let content = UNMutableNotificationContent()
         content.title = "抗原检测\(n+1) \(t == 0 ? "已开始" : "即将结束")"
-        content.body = "\(times[n][0].0):\(times[n][0].1) - \(times[n][1].0):\(times[n][1].1)"
+        content.body = "\(times[n][0].0):\(times[n][0].1)0 - \(times[n][1].0):\(times[n][1].1)"
         content.userInfo = [:]
         content.sound = .default
         var matchingDate = DateComponents()
-        matchingDate.hour = times[n][t].1 < 10 ? times[n][t].0 - 1 : times[n][t].0
-        matchingDate.minute = times[n][t].1 < 10 ? times[n][t].1 + 50 : times[n][t].1 - 10
+        if t == 0 {
+            matchingDate.hour = times[n][t].0
+            matchingDate.minute = times[n][t].1
+        } else {
+            matchingDate.hour = times[n][t].1 < 10 ? times[n][t].0 - 1 : times[n][t].0
+            matchingDate.minute = times[n][t].1 < 10 ? times[n][t].1 + 50 : times[n][t].1 - 10
+        }
         let trigger = UNCalendarNotificationTrigger(dateMatching: matchingDate, repeats: true)
         let requestIdentifier = "com.wyw.tush.n\(n)\(t)"
         let request = UNNotificationRequest(
@@ -162,6 +166,12 @@ extension ViewController {
     func fillForms() {
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[2]/div[2]/div/div")
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[3]/div[2]/div[1]/div")
+        if let copiedStr = UIPasteboard.general.string {
+            let number = Int(copiedStr) ?? 0
+            if number > 0 {
+                runJS("document.getElementById('q5').value='\(number)';")
+            }
+        }
         runJS("$(document).scrollTop($(document).height());")
     }
     
