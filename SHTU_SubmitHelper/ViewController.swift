@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=159110074")!
     )
     var studentID: String? = UserDefaults.standard.string(forKey: "_SHTU_ID")
+    var pswd: String? = UserDefaults.standard.string(forKey: "_SHTU_PSWD")
     var onWebLoad: (() -> Void) = {}
     var launched = false
     var _phase = -1
@@ -104,16 +105,24 @@ class ViewController: UIViewController {
             title: "账号设置", message: nil,
             preferredStyle: .alert
         )
-        alert.addTextField(configurationHandler: {textField in
+        alert.addTextField {textField in
             textField.keyboardType = .numberPad
             textField.clearButtonMode = .never
             textField.placeholder = "你的上科大学号"
             textField.text = self.studentID
-        })
+        }
+        alert.addTextField {textField in
+            textField.keyboardType = .numberPad
+            textField.clearButtonMode = .never
+            textField.placeholder = "身份证后六位"
+            textField.text = self.pswd
+        }
         alert.addAction(UIAlertAction(
             title: "Done", style: .default, handler: {_ in
-                self.studentID = alert.textFields?.first?.text
+                self.studentID = alert.textFields![0].text
+                self.pswd = alert.textFields![1].text
                 UserDefaults.standard.set(self.studentID, forKey: "_SHTU_ID")
+                UserDefaults.standard.set(self.pswd, forKey: "_SHTU_PSWD")
                 DispatchQueue.main.async {
                     self.loginAction()
                 }
@@ -132,6 +141,7 @@ extension ViewController {
             case -1:
                 _phase = 0
                 runJS("document.getElementById('register-user-name').value='\(self.studentID!)';")
+                runJS("document.getElementById('register-user-password').value='\(self.pswd!)';")
                 runJS("document.getElementById('btnSubmit').click();")
             case 0:
                 break
@@ -148,7 +158,7 @@ extension ViewController {
             }
         }
         print("xonfig init")
-        if studentID == nil {
+        if studentID == nil || pswd == nil {
             configAction(self)
         } else {loginAction()}
     }
@@ -167,9 +177,8 @@ extension ViewController {
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[2]/div[2]/div/div")
         click(on: "/html/body/form/div[7]/div[3]/fieldset/div[3]/div[2]/div[1]/div")
         if let copiedStr = UIPasteboard.general.string {
-            let number = Int(copiedStr) ?? 0
-            if number > 0 {
-                runJS("document.getElementById('q5').value='\(number)';")
+            if copiedStr.count < 32 {
+                runJS("document.getElementById('q5').value='\(copiedStr)';")
             }
         }
         runJS("$(document).scrollTop($(document).height());")
