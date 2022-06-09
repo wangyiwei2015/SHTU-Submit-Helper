@@ -55,39 +55,29 @@ class ViewController: UIViewController {
     }
     
     func setup() {
-        for n in 0...1 {
-            for t in 0...1 {
-                if !UserDefaults.standard.bool(forKey: "_nPN_\(n)_\(t)") {
-                    addNotification(n, t)
-                }
-            }
+        if !UserDefaults.standard.bool(forKey: "_nPN_OK") {
+            addNotification()
         }
-        
         configInit()
     }
     
-    func addNotification(_ n: Int, _ t: Int) {
+    func addNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "抗原检测\(n+1) \(t == 0 ? "已开始" : "即将结束")"
-        content.body = "\(times[n][0].0):\(times[n][0].1)0 - \(times[n][1].0):\(times[n][1].1)"
+        content.title = "点击提交抗原检测结果"
+        content.body = "!!!"
         content.userInfo = [:]
         content.sound = .default
         var matchingDate = DateComponents()
-        if t == 0 {
-            matchingDate.hour = times[n][t].0
-            matchingDate.minute = times[n][t].1
-        } else {
-            matchingDate.hour = times[n][t].1 < 10 ? times[n][t].0 - 1 : times[n][t].0
-            matchingDate.minute = times[n][t].1 < 10 ? times[n][t].1 + 50 : times[n][t].1 - 10
-        }
+        matchingDate.hour = 10
+        matchingDate.minute = 30
         let trigger = UNCalendarNotificationTrigger(dateMatching: matchingDate, repeats: true)
-        let requestIdentifier = "com.wyw.tush.n\(n)\(t)"
+        let requestIdentifier = "com.wyw.tush.new"
         let request = UNNotificationRequest(
             identifier: requestIdentifier, content: content, trigger: trigger
         )
         UNUserNotificationCenter.current().add(request) {error in
             if error == nil {
-                UserDefaults.standard.set(true, forKey: "_nPN_\(n)_\(t)")
+                UserDefaults.standard.set(true, forKey: "_nPN_OK")
             } else {print(error.debugDescription)}
         }
     }
@@ -170,18 +160,20 @@ extension ViewController {
     }
     
     func selectLatestForm() {
-        click(on: "/html/body/div[2]/div/div/div/dl[1]/a")
+        //click(on: "/html/body/div[2]/div/div/div/dl[1]/a")
+        click(on: "/html/body/div[2]/div/div/div/dl[1]/a/span")
     }
     
     func fillForms() {
-        click(on: "/html/body/form/div[7]/div[3]/fieldset/div[2]/div[2]/div/div")
-        click(on: "/html/body/form/div[7]/div[3]/fieldset/div[3]/div[2]/div[1]/div")
+        click(on: "/html/body/div[1]/form/div[8]/div[3]/fieldset/div[2]/div[2]/div")
+        click(on: "/html/body/div[1]/form/div[8]/div[3]/fieldset/div[3]/div[2]/div[1]")
         if let copiedStr = UIPasteboard.general.string {
             if copiedStr.count < 32 {
                 runJS("document.getElementById('q5').value='\(copiedStr)';")
             }
         }
         runJS("$(document).scrollTop($(document).height());")
+        click(on: "//*[@id=\"fileUpload4\"]")
     }
     
 }
