@@ -7,6 +7,7 @@
 
 import UIKit
 import WebKit
+import Photos
 
 class ViewController: UIViewController, WKNavigationDelegate {
 
@@ -33,7 +34,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if !pageLoaded {
-            webView.load(URLRequest(url: URL(string: "https://wj.shanghaitech.edu.cn/vm/YDxaA7M.aspx")!))
+            webView.load(URLRequest(url: URL(string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=159110074")!))
             pageLoaded = true
         }
     }
@@ -50,7 +51,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     @IBAction func reloadAction(_ sender: Any) {
         self.webView.reload()
-        //webView.load(URLRequest(url: URL(string: "https://wj.shanghaitech.edu.cn/vm/YDxaA7M.aspx")!))
+        //webView.load(URLRequest(url: URL(string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=159110074")!))
     }
     
     @IBAction func userAcc(_ sender: Any) {
@@ -85,6 +86,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
             //print(msg != nil)
         //}
         webLogin(0)
+        webSelect(0)
         webFill(0)
     }
     
@@ -98,15 +100,21 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     @IBAction func webLogin(_ sender: Any) {
         print("+ login action")
+        runJS("document.getElementsByClassName('')[0].style.display='none'")
         runJS("document.getElementById('register-user-name').value=\(user ?? "")")
         runJS("document.getElementById('register-user-password').value=\(pswd ?? "")")
         runJS("document.getElementById('btnSubmit').click()")
     }
     
     @IBAction func webSelect(_ sender: Any) {
+        runJS("document.getElementsByClassName('infoLink')[0].style.display='none'")
+        runJS("document.getElementsByClassName('surveyItem')[0].children[0].click()")
     }
     
     @IBAction func webFill(_ sender: Any) {
+        runJS("document.getElementsByClassName('')[0].style.display='none'")
+        runJS("document.getElementsByClassName('')[0].style.display='none'")
+        runJS("document.getElementsByClassName('')[0].style.display='none'")
         runJS("document.getElementsByClassName('ui-radio')[1].click()")
         runJS("document.getElementsByClassName('ui-radio')[0].click()")
         runJS("document.getElementById('fileUpload3').scrollIntoView()")
@@ -114,6 +122,21 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     @IBAction func webSubmit(_ sender: Any) {
         runJS("document.getElementById('ctlNext').click()")
+        if PHPhotoLibrary.authorizationStatus(for: .readWrite) != .authorized {
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { result in
+                if result != .authorized {
+                    return
+                }
+            }
+        }
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.includeAssetSourceTypes = .typeUserLibrary
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
+        fetchOptions.fetchLimit = 1
+        let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
+        PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest.deleteAssets(fetchResult)
+        }
     }
     
     @IBAction func doneExit(_ sender: Any) {
