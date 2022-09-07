@@ -112,12 +112,18 @@ class ViewController: UIViewController, WKNavigationDelegate {
     }
     
     @IBAction func webFill(_ sender: Any) {
-        runJS("document.getElementsByClassName('')[0].style.display='none'")
-        runJS("document.getElementsByClassName('')[0].style.display='none'")
-        runJS("document.getElementsByClassName('')[0].style.display='none'")
+        let elements: [String] = ["toplogo","divRefTab1","divSubmit"]
+        let classes: [String] = ["field-label","field-label","field-label"]
+        for elementId in elements {
+            runJS("document.getElementById('\(elementId)').style.display='none'")
+        }
+        for elementClass in classes {
+            runJS("document.getElementsByClassName('\(elementClass)')[0].style.display='none'")
+        }
         runJS("document.getElementsByClassName('ui-radio')[1].click()")
         runJS("document.getElementsByClassName('ui-radio')[0].click()")
         runJS("document.getElementById('fileUpload3').scrollIntoView()")
+        runJS("closeNo()")
     }
     
     @IBAction func webSubmit(_ sender: Any) {
