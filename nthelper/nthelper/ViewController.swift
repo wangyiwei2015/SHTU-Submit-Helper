@@ -51,7 +51,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     @IBAction func reloadAction(_ sender: Any) {
         self.webView.reload()
-        //webView.load(URLRequest(url: URL(string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=159110074")!))
+        //webView.load(URLRequest(url: URL(string: "http://wenjuan.shanghaitech.edu.cn/user/qlist.aspx?sysid=184502370")!))
     }
     
     @IBAction func userAcc(_ sender: Any) {
