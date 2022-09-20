@@ -34,7 +34,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if !pageLoaded {
-            webView.load(URLRequest(url: URL(string: "http://wj.shanghaitech.edu.cn/user/qlist.aspx?sysid=184502370")!))
+            webView.load(URLRequest(url: URL(string: "http://wenjuan.shanghaitech.edu.cn/user/qlist.aspx?sysid=184502370")!))
             pageLoaded = true
         }
     }
