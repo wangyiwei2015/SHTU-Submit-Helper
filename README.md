@@ -1,5 +1,5 @@
 # SHTU-Submit-Helper
-上科大 抗原自测提交助手 202204
+上科大 抗原自测提交助手 202204-202212
 
 ![image](SHTU_SubmitHelper/Assets.xcassets/AppIcon.appiconset/tush1024_83pt@2x.png)
 
